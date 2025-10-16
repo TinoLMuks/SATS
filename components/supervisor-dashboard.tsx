@@ -34,7 +34,7 @@ export function SupervisorDashboard() {
       setStudents(studentsData.students)
       setAttendance(attendanceData.attendance)
     } catch (error) {
-      console.error("[v0] Failed to fetch dashboard data:", error)
+      console.error("Failed to fetch dashboard data:", error)
     } finally {
       setLoading(false)
     }
@@ -153,7 +153,7 @@ export function SupervisorDashboard() {
                         <th className="text-left p-2">Student ID</th>
                         <th className="text-left p-2">Name</th>
                         <th className="text-left p-2">Email</th>
-                        <th className="text-left p-2">Grade</th>
+                        <th className="text-left p-2">Year of Study</th>
                         <th className="text-right p-2">Total Hours</th>
                         <th className="text-right p-2">Sessions</th>
                       </tr>

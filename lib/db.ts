@@ -22,10 +22,10 @@ export async function query(text: string, params?: any[]) {
   try {
     const res = await pool.query(text, params)
     const duration = Date.now() - start
-    console.log("[v0] Executed query", { text, duration, rows: res.rowCount })
+    console.log("Executed query", { text, duration, rows: res.rowCount })
     return res
   } catch (error) {
-    console.error("[v0] Database query error:", error)
+    console.error("Database query error:", error)
     throw error
   }
 }

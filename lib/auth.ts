@@ -32,7 +32,7 @@ export async function authenticateSupervisor(username: string, password: string)
     const { password_hash, ...supervisorData } = supervisor
     return supervisorData
   } catch (error) {
-    console.error("[v0] Authentication error:", error)
+    console.error("Authentication error:", error)
     return null
   }
 }

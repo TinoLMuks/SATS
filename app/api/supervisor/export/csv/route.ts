@@ -36,12 +36,16 @@ export async function GET(request: NextRequest) {
         ORDER BY s.last_name, s.first_name
       `)
 
-      // Create CSV header
-      csvContent = "Student ID,First Name,Last Name,Email,Phone,Grade Level,Total Hours,Total Sessions\n"
+      // CSV header
+      csvContent =
+        "Student ID,Student Ambassador Name,Email,Phone,Year of Study,Total Hours,Total Sessions\n"
 
-      // Add data rows
+      // CSV rows
       result.rows.forEach((row) => {
-        csvContent += `${row.student_id},"${row.first_name}","${row.last_name}",${row.email},${row.phone || ""},${row.grade_level || ""},${Number.parseFloat(row.total_hours).toFixed(2)},${row.total_sessions}\n`
+        const fullName = `${row.first_name} ${row.last_name}`
+        csvContent += `${row.student_id},"${fullName}",${row.email},${row.phone || ""},${
+          row.grade_level || ""
+        },${Number.parseFloat(row.total_hours).toFixed(2)},${row.total_sessions}\n`
       })
     } else if (reportType === "attendance") {
       // Export attendance logs
@@ -60,16 +64,18 @@ export async function GET(request: NextRequest) {
         ORDER BY a.clock_in DESC
       `)
 
-      // Create CSV header
-      csvContent = "Log ID,Student ID,First Name,Last Name,Clock In,Clock Out,Total Hours,Status\n"
+      // CSV header
+      csvContent =
+        "Log ID,Student Ambassador Name,Student ID,Clock In,Clock Out,Total Hours,Status\n"
 
-      // Add data rows
+      // CSV rows
       result.rows.forEach((row) => {
+        const fullName = `${row.first_name} ${row.last_name}`
         const clockIn = format(new Date(row.clock_in), "yyyy-MM-dd HH:mm:ss")
         const clockOut = row.clock_out ? format(new Date(row.clock_out), "yyyy-MM-dd HH:mm:ss") : ""
         const hours = row.total_hours ? Number.parseFloat(row.total_hours).toFixed(2) : ""
 
-        csvContent += `${row.id},${row.student_id},"${row.first_name}","${row.last_name}",${clockIn},${clockOut},${hours},${row.status}\n`
+        csvContent += `${row.id},"${fullName}",${row.student_id},${clockIn},${clockOut},${hours},${row.status}\n`
       })
     }
 
@@ -77,11 +83,14 @@ export async function GET(request: NextRequest) {
     return new NextResponse(csvContent, {
       headers: {
         "Content-Type": "text/csv",
-        "Content-Disposition": `attachment; filename="volunteer-${reportType}-${format(new Date(), "yyyy-MM-dd")}.csv"`,
+        "Content-Disposition": `attachment; filename="Student Ambassador-${reportType}-${format(
+          new Date(),
+          "yyyy-MM-dd"
+        )}.csv"`,
       },
     })
   } catch (error) {
-    console.error("[v0] CSV export error:", error)
+    console.error("CSV export error:", error)
     return NextResponse.json({ error: "Failed to export CSV" }, { status: 500 })
   }
 }

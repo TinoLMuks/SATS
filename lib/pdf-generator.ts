@@ -7,7 +7,7 @@ export function generateStudentsPDF(students: any[]) {
 
   // Add title
   doc.setFontSize(20)
-  doc.text("Volunteer Students Report", 14, 20)
+  doc.text("Student Ambassador Report", 14, 20)
 
   // Add date
   doc.setFontSize(10)
@@ -42,7 +42,7 @@ export function generateAttendancePDF(attendance: any[]) {
 
   // Add title
   doc.setFontSize(20)
-  doc.text("Volunteer Attendance Report", 14, 20)
+  doc.text("Student Ambassador Attendance Report", 14, 20)
 
   // Add date
   doc.setFontSize(10)

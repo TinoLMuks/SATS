@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ student: result.rows[0] }, { status: 201 })
   } catch (error) {
-    console.error("[v0] Registration error:", error)
+    console.error("Registration error:", error)
     return NextResponse.json({ error: "Failed to register student" }, { status: 500 })
   }
 }

@@ -15,10 +15,10 @@ export async function GET() {
       [],
     )
 
-    console.log("[v0] Active students fetched:", result.rows.length)
+    console.log("Active students fetched:", result.rows.length)
     return NextResponse.json({ activeStudents: result.rows })
   } catch (error: any) {
-    console.error("[v0] Error fetching active students:", error)
+    console.error("Error fetching active students:", error)
     return NextResponse.json({ error: "Failed to fetch active students" }, { status: 500 })
   }
 }

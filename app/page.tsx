@@ -5,24 +5,36 @@ import { Settings, BarChart3, UserPlus } from "lucide-react"
 
 export default function HomePage() {
   return (
-    <div className="relative">
+    <div className="relative text-red-600">
       {/* Admin Links - Top Right */}
-      <div className="absolute top-4 right-4 flex gap-2 z-10">
+      <div className="absolute top-2 right-3 flex gap-1.5 z-10 text-red-600">
         <Link href="/register">
-          <Button variant="outline" size="sm">
-            <UserPlus className="mr-2 h-4 w-4" />
+          <Button
+            variant="outline"
+            size="sm"
+            className="text-red-600 border-red-500 hover:bg-red-50 text-xs py-1 px-2"
+          >
+            <UserPlus className="mr-1 h-3 w-3" />
             Register
           </Button>
         </Link>
         <Link href="/public">
-          <Button variant="outline" size="sm">
-            <BarChart3 className="mr-2 h-4 w-4" />
+          <Button
+            variant="outline"
+            size="sm"
+            className="text-red-600 border-red-500 hover:bg-red-50 text-xs py-1 px-2"
+          >
+            <BarChart3 className="mr-1 h-3 w-3" />
             Dashboard
           </Button>
         </Link>
         <Link href="/supervisor">
-          <Button variant="outline" size="sm">
-            <Settings className="mr-2 h-4 w-4" />
+          <Button
+            variant="outline"
+            size="sm"
+            className="text-red-600 border-red-500 hover:bg-red-50 text-xs py-1 px-2"
+          >
+            <Settings className="mr-1 h-3 w-3" />
             Supervisor
           </Button>
         </Link>

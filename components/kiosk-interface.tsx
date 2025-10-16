@@ -5,9 +5,17 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { LogIn, LogOut, Loader2, CheckCircle2, XCircle, Users, Clock } from "lucide-react"
+import {
+  LogIn,
+  LogOut,
+  Loader2,
+  CheckCircle2,
+  XCircle,
+  Users,
+  Clock,
+} from "lucide-react"
 
-type KioskState = "idle" | "loading" | "success" | "error"
+type KioskState = "idle" | "success" | "error"
 
 interface ActiveStudent {
   student_id: string
@@ -23,6 +31,10 @@ export function KioskInterface() {
   const [duration, setDuration] = useState<string | null>(null)
   const [activeStudents, setActiveStudents] = useState<ActiveStudent[]>([])
   const [currentTime, setCurrentTime] = useState(new Date())
+
+  // Separate loading states
+  const [isClockingIn, setIsClockingIn] = useState(false)
+  const [isClockingOut, setIsClockingOut] = useState(false)
 
   useEffect(() => {
     const fetchActiveStudents = async () => {
@@ -43,9 +55,7 @@ export function KioskInterface() {
   }, [])
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(new Date())
-    }, 1000)
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000)
     return () => clearInterval(timer)
   }, [])
 
@@ -55,11 +65,7 @@ export function KioskInterface() {
     const totalMinutes = Math.floor(diff / 60000)
     const hours = Math.floor(totalMinutes / 60)
     const minutes = totalMinutes % 60
-
-    if (hours > 0) {
-      return `${hours}h ${minutes}m`
-    }
-    return `${minutes}m`
+    return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`
   }
 
   const resetForm = () => {
@@ -69,104 +75,117 @@ export function KioskInterface() {
       setState("idle")
       setMessage("")
       setDuration(null)
+      setIsClockingIn(false)
+      setIsClockingOut(false)
     }, 5000)
   }
 
   const handleClockIn = async () => {
-    if (!studentId.trim()) {
+    if (!name.trim() || !studentId.trim()) {
       setState("error")
-      setMessage("Please enter your Student ID")
+      setMessage("Please enter both Name and Student ID")
       resetForm()
       return
     }
 
-    setState("loading")
+    setIsClockingIn(true)
+    setState("idle")
 
     try {
       const response = await fetch("/api/attendance/clock-in", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ studentId: studentId.trim() }),
+        body: JSON.stringify({
+          name: name.trim(),
+          studentId: studentId.trim(),
+        }),
       })
 
       const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to clock in")
-      }
+      if (!response.ok) throw new Error(data.error || "Failed to clock in")
 
       setState("success")
       setMessage(`Welcome, ${data.student.name}! You are now clocked in.`)
+
       const activeResponse = await fetch("/api/attendance/active")
       const activeData = await activeResponse.json()
-      if (activeResponse.ok) {
-        setActiveStudents(activeData.activeStudents)
-      }
+      if (activeResponse.ok) setActiveStudents(activeData.activeStudents)
+
       resetForm()
     } catch (err: any) {
       setState("error")
       setMessage(err.message)
       resetForm()
+    } finally {
+      setIsClockingIn(false)
     }
   }
 
   const handleClockOut = async () => {
-    if (!studentId.trim()) {
+    if (!name.trim() || !studentId.trim()) {
       setState("error")
-      setMessage("Please enter your Student ID")
+      setMessage("Please enter both Name and Student ID")
       resetForm()
       return
     }
 
-    setState("loading")
+    setIsClockingOut(true)
+    setState("idle")
 
     try {
       const response = await fetch("/api/attendance/clock-out", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ studentId: studentId.trim() }),
+        body: JSON.stringify({
+          name: name.trim(),
+          studentId: studentId.trim(),
+        }),
       })
 
       const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to clock out")
-      }
+      if (!response.ok) throw new Error(data.error || "Failed to clock out")
 
       const totalMinutes = Math.round(data.attendance.total_hours * 60)
       const hours = Math.floor(totalMinutes / 60)
       const minutes = totalMinutes % 60
       const durationText =
         hours > 0
-          ? `${hours} hour${hours !== 1 ? "s" : ""} ${minutes} minute${minutes !== 1 ? "s" : ""}`
+          ? `${hours} hour${hours !== 1 ? "s" : ""} ${minutes} minute${
+              minutes !== 1 ? "s" : ""
+            }`
           : `${minutes} minute${minutes !== 1 ? "s" : ""}`
 
       setState("success")
       setMessage(`Thank you, ${data.student.name}!`)
       setDuration(durationText)
+
       const activeResponse = await fetch("/api/attendance/active")
       const activeData = await activeResponse.json()
-      if (activeResponse.ok) {
-        setActiveStudents(activeData.activeStudents)
-      }
+      if (activeResponse.ok) setActiveStudents(activeData.activeStudents)
+
       resetForm()
     } catch (err: any) {
       setState("error")
       setMessage(err.message)
       resetForm()
+    } finally {
+      setIsClockingOut(false)
     }
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-600 via-black to-red-900 flex items-center justify-center p-4">
       <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* MAIN CARD */}
         <Card className="lg:col-span-2 shadow-2xl border-red-600 border-4">
           <CardContent className="p-6 md:p-10">
             <div className="text-center mb-6">
               <div className="flex items-center justify-center gap-3 mb-4">
                 <Users className="h-12 w-12 text-red-600" />
                 <div>
-                  <h1 className="text-4xl md:text-5xl font-black text-red-600">SATS</h1>
+                  <h1 className="text-4xl md:text-5xl font-black text-red-600">
+                    SATS
+                  </h1>
                   <p className="text-base md:text-lg font-semibold text-muted-foreground">
                     Student Ambassador Tracking System
                   </p>
@@ -174,6 +193,7 @@ export function KioskInterface() {
               </div>
             </div>
 
+            {/* SUCCESS ALERT */}
             {state === "success" && (
               <Alert className="mb-6 bg-green-50 border-green-500 border-2">
                 <CheckCircle2 className="h-5 w-5 text-green-600" />
@@ -181,23 +201,31 @@ export function KioskInterface() {
                   <p className="text-xl font-bold mb-1">{message}</p>
                   {duration && (
                     <p className="text-lg font-semibold">
-                      Time worked: <span className="text-green-700">{duration}</span>
+                      Time worked:{" "}
+                      <span className="text-green-700">{duration}</span>
                     </p>
                   )}
                 </AlertDescription>
               </Alert>
             )}
 
+            {/* ERROR ALERT */}
             {state === "error" && (
               <Alert variant="destructive" className="mb-6 border-2">
                 <XCircle className="h-5 w-5" />
-                <AlertDescription className="text-lg font-semibold">{message}</AlertDescription>
+                <AlertDescription className="text-lg font-semibold">
+                  {message}
+                </AlertDescription>
               </Alert>
             )}
 
+            {/* FORM */}
             <div className="space-y-4">
               <div>
-                <label htmlFor="name" className="block text-base font-semibold mb-1.5 text-foreground">
+                <label
+                  htmlFor="name"
+                  className="block text-base font-semibold mb-1.5 text-foreground"
+                >
                   Full Name
                 </label>
                 <Input
@@ -206,12 +234,15 @@ export function KioskInterface() {
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Enter your full name"
                   className="text-lg md:text-xl h-12 font-medium border-2 focus:border-red-600"
-                  disabled={state === "loading"}
+                  disabled={isClockingIn || isClockingOut}
                 />
               </div>
 
               <div>
-                <label htmlFor="studentId" className="block text-base font-semibold mb-1.5 text-foreground">
+                <label
+                  htmlFor="studentId"
+                  className="block text-base font-semibold mb-1.5 text-foreground"
+                >
                   Student ID
                 </label>
                 <Input
@@ -220,23 +251,19 @@ export function KioskInterface() {
                   onChange={(e) => setStudentId(e.target.value)}
                   placeholder="Enter your Student ID"
                   className="text-lg md:text-xl h-12 font-medium border-2 focus:border-red-600"
-                  disabled={state === "loading"}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      handleClockIn()
-                    }
-                  }}
+                  disabled={isClockingIn || isClockingOut}
                 />
               </div>
 
+              {/* BUTTONS */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
                 <Button
                   onClick={handleClockIn}
-                  disabled={state === "loading"}
+                  disabled={isClockingIn}
                   size="lg"
                   className="h-20 text-2xl font-black bg-red-600 hover:bg-red-700 text-white shadow-lg"
                 >
-                  {state === "loading" ? (
+                  {isClockingIn ? (
                     <Loader2 className="h-8 w-8 animate-spin" />
                   ) : (
                     <>
@@ -248,11 +275,11 @@ export function KioskInterface() {
 
                 <Button
                   onClick={handleClockOut}
-                  disabled={state === "loading"}
+                  disabled={isClockingOut}
                   size="lg"
                   className="h-20 text-2xl font-black bg-black hover:bg-gray-900 text-white shadow-lg"
                 >
-                  {state === "loading" ? (
+                  {isClockingOut ? (
                     <Loader2 className="h-8 w-8 animate-spin" />
                   ) : (
                     <>
@@ -270,6 +297,7 @@ export function KioskInterface() {
           </CardContent>
         </Card>
 
+        {/* ACTIVE STUDENTS CARD */}
         <Card className="shadow-2xl border-red-600 border-4 max-h-[600px] overflow-hidden flex flex-col">
           <CardContent className="p-6 flex flex-col h-full">
             <div className="flex items-center gap-2 mb-4">
@@ -291,13 +319,15 @@ export function KioskInterface() {
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex-1 min-w-0">
-                        <p className="font-bold text-sm text-foreground truncate">{student.name}</p>
-                        
-                      
+                        <p className="font-bold text-sm text-foreground truncate">
+                          {student.name}
+                        </p>
                       </div>
                       <div className="flex items-center gap-1 bg-red-600 text-white px-2 py-1 rounded-md">
                         <Clock className="h-3 w-3" />
-                        <span className="text-sm font-bold">{calculateDuration(student.clock_in_time)}</span>
+                        <span className="text-sm font-bold">
+                          {calculateDuration(student.clock_in_time)}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -307,7 +337,8 @@ export function KioskInterface() {
 
             <div className="mt-4 pt-4 border-t border-red-200">
               <p className="text-center text-sm font-bold text-red-600">
-                {activeStudents.length} Ambassador{activeStudents.length !== 1 ? "s" : ""} Active
+                {activeStudents.length} Ambassador
+                {activeStudents.length !== 1 ? "s" : ""} Active
               </p>
             </div>
           </CardContent>

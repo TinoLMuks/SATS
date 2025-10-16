@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ students: result.rows })
   } catch (error) {
-    console.error("[v0] Students fetch error:", error)
+    console.error("Students fetch error:", error)
     return NextResponse.json({ error: "Failed to fetch students" }, { status: 500 })
   }
 }

@@ -22,13 +22,13 @@ export function ExportButtons({ students, attendance }: ExportButtonsProps) {
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement("a")
       a.href = url
-      a.download = `volunteer-${type}-${new Date().toISOString().split("T")[0]}.csv`
+      a.download = `Student Ambassador-${type}-${new Date().toISOString().split("T")[0]}.csv`
       document.body.appendChild(a)
       a.click()
       window.URL.revokeObjectURL(url)
       document.body.removeChild(a)
     } catch (error) {
-      console.error("[v0] CSV export failed:", error)
+      console.error("CSV export failed:", error)
     } finally {
       setLoading(false)
     }
@@ -38,9 +38,9 @@ export function ExportButtons({ students, attendance }: ExportButtonsProps) {
     setLoading(true)
     try {
       const doc = type === "students" ? generateStudentsPDF(students) : generateAttendancePDF(attendance)
-      doc.save(`volunteer-${type}-${new Date().toISOString().split("T")[0]}.pdf`)
+      doc.save(`Student Ambassador-${type}-${new Date().toISOString().split("T")[0]}.pdf`)
     } catch (error) {
-      console.error("[v0] PDF export failed:", error)
+      console.error("PDF export failed:", error)
     } finally {
       setLoading(false)
     }

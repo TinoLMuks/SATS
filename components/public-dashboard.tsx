@@ -35,7 +35,7 @@ export function PublicDashboard() {
       const data = await response.json()
       setStats(data.stats)
     } catch (error) {
-      console.error("[v0] Failed to fetch public stats:", error)
+      console.error("Failed to fetch public stats:", error)
     } finally {
       setLoading(false)
     }

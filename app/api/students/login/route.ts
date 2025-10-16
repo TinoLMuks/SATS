@@ -4,10 +4,10 @@ import { query } from "@/lib/db"
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { studentId } = body
+    const { studentId, name } = body
 
-    if (!studentId) {
-      return NextResponse.json({ error: "Student ID is required" }, { status: 400 })
+    if (!studentId || !name) {
+      return NextResponse.json({ error: "Student ID and Name are required" }, { status: 400 })
     }
 
     // Find student by student ID
@@ -23,6 +23,13 @@ export async function POST(request: NextRequest) {
     }
 
     const student = result.rows[0]
+    const fullName = `${student.first_name} ${student.last_name}`.trim().toLowerCase()
+    const enteredName = name.trim().toLowerCase()
+
+    // Make very sure both name and ID match
+    if (fullName !== enteredName) {
+      return NextResponse.json({ error: "Name and Student ID do not match" }, { status: 400 })
+    }
 
     // Check if student is currently clocked in
     const attendanceCheck = await query(
@@ -42,7 +49,7 @@ export async function POST(request: NextRequest) {
       currentSession: isClockedIn ? attendanceCheck.rows[0] : null,
     })
   } catch (error) {
-    console.error("[v0] Login error:", error)
+    console.error("Login error:", error)
     return NextResponse.json({ error: "Failed to login" }, { status: 500 })
   }
 }
