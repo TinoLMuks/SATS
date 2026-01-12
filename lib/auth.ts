@@ -15,7 +15,7 @@ export async function authenticateSupervisor(username: string, password: string)
     const result = await query(
       "SELECT id, username, password_hash, full_name, email, role, created_at FROM supervisors WHERE username = $1",
       [username],
-    )
+    ) // log results
 
     if (result.rows.length === 0) {
       return null
