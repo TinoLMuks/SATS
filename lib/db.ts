@@ -1,13 +1,13 @@
 import { Pool } from "pg"
 
-// Create a singleton pool instance
 let pool: Pool | null = null
 
 export function getPool(): Pool {
   if (!pool) {
     pool = new Pool({
       connectionString: process.env.DATABASE_URL,
-      ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : false,
+      // Remove SSL entirely or make it optional
+      ssl: false,
       max: 20,
       idleTimeoutMillis: 30000,
       connectionTimeoutMillis: 2000,
@@ -30,7 +30,6 @@ export async function query(text: string, params?: any[]) {
   }
 }
 
-// Helper function to close the pool (useful for testing)
 export async function closePool() {
   if (pool) {
     await pool.end()
